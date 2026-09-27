@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from .clock import due_instants, format_instant, is_business_time, parse_instant
 from .metrics import MetricsInputError, calculate_metrics
 from .storage import connect, fetch, initialize, row_to_ticket
+from .ticket_event_lookup import events_for_ticket
 
 
 MATRIX = {
@@ -138,6 +139,14 @@ def ticket_events() -> list[dict]:
             )
     result.sort(key=lambda event: (parse_instant(event["at"]), event["ticket_id"]))
     return result
+
+
+@app.get("/dora/tickets/{ticket_id}/events")
+def ticket_events_for_one(ticket_id: str) -> list[dict]:
+    events = events_for_ticket(ticket_id)
+    if events is None:
+        raise HTTPException(status_code=404, detail="ticket not found")
+    return events
 
 
 @app.post("/tickets", status_code=201)

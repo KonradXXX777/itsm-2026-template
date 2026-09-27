@@ -91,6 +91,17 @@ def main() -> None:
     check("ticket lifecycle stream", status == 200 and phases == ["created", "acknowledged", "resolved", "closed"])
     ordered_keys = [(item["at"], item["ticket_id"]) for item in timeline]
     check("ticket stream ordering", ordered_keys == sorted(ordered_keys))
+    status, one_ticket_timeline = request("GET", f"/dora/tickets/{ticket_id}/events")
+    expected_ticket_timeline = [item for item in timeline if item["ticket_id"] == ticket_id]
+    check(
+        "single-ticket lifecycle lookup",
+        status == 200 and one_ticket_timeline == expected_ticket_timeline,
+    )
+    status, missing_ticket_timeline = request("GET", "/dora/tickets/not-a-ticket/events")
+    check(
+        "single-ticket lookup not found",
+        status == 404 and "error" in missing_ticket_timeline,
+    )
     status, reopened = request("POST", f"/tickets/{ticket_id}/reopen", "2026-10-15T12:00:00Z")
     check("closed reopen", status == 200 and reopened.get("state") == "in_progress")
 
