@@ -1,4 +1,4 @@
-# ai-generated: 100% - OpenAI Codex implemented a dependency-free HTTP smoke and lifecycle test suite.
+# ai-generated: 100% - OpenAI Codex implemented HTTP, ticket lifecycle and DORA endpoint tests.
 
 """Containerized own tests for the Stretch S3 contract."""
 
@@ -86,8 +86,75 @@ def main() -> None:
     check("resolve", status == 200 and resolved.get("state") == "resolved")
     status, closed = request("POST", f"/tickets/{ticket_id}/close", "2026-10-14T12:00:00Z")
     check("close", status == 200 and closed.get("state") == "closed")
+    status, timeline = request("GET", "/dora/ticket-events")
+    phases = [item["phase"] for item in timeline if item["ticket_id"] == ticket_id]
+    check("ticket lifecycle stream", status == 200 and phases == ["created", "acknowledged", "resolved", "closed"])
+    ordered_keys = [(item["at"], item["ticket_id"]) for item in timeline]
+    check("ticket stream ordering", ordered_keys == sorted(ordered_keys))
     status, reopened = request("POST", f"/tickets/{ticket_id}/reopen", "2026-10-15T12:00:00Z")
     check("closed reopen", status == 200 and reopened.get("state") == "in_progress")
+
+    metrics_window = {"from": "2026-09-01T00:00:00Z", "to": "2026-09-22T00:00:00Z"}
+    metrics_events = [
+        {
+            "event_id": "test-commit",
+            "type": "commit",
+            "at": "2026-09-01T00:00:00Z",
+            "sha": "test-sha",
+            "branch": "feature/test",
+            "change_id": "test-change",
+            "reverts": None,
+        },
+        {
+            "event_id": "test-deployment",
+            "type": "deployment",
+            "at": "2026-09-01T00:00:10Z",
+            "deployment_id": "test-deploy",
+            "environment": "production",
+            "outcome": "success",
+            "commits": ["test-sha"],
+            "unplanned": False,
+            "caused_by": None,
+        },
+    ]
+    metrics_request = {"window": metrics_window, "events": metrics_events}
+    status, metrics = request("POST", "/dora/metrics", body=metrics_request)
+    check(
+        "DORA metric response",
+        status == 200
+        and metrics.get("spec_version") == "1.0.0"
+        and metrics.get("counts", {}).get("deployments") == 1
+        and metrics.get("change_lead_time_seconds_p50") == 10,
+    )
+    status, repeated_metrics = request("POST", "/dora/metrics", body=metrics_request)
+    check("DORA request purity", status == 200 and repeated_metrics == metrics)
+    reversed_request = {"window": metrics_window, "events": list(reversed(metrics_events))}
+    status, reversed_metrics = request("POST", "/dora/metrics", body=reversed_request)
+    check("DORA order independence", status == 200 and reversed_metrics == metrics)
+    duplicate_request = {"window": metrics_window, "events": metrics_events * 2}
+    status, duplicate_metrics = request("POST", "/dora/metrics", body=duplicate_request)
+    check("DORA duplicate events", status == 200 and duplicate_metrics == metrics)
+    status, empty_metrics = request("POST", "/dora/metrics", body={"window": metrics_window, "events": []})
+    check(
+        "DORA empty log",
+        status == 200
+        and empty_metrics.get("deployment_frequency_per_day") == 0.0
+        and empty_metrics.get("change_lead_time_seconds_p50") is None
+        and empty_metrics.get("change_fail_rate") is None
+        and empty_metrics.get("counts", {}).get("deployments") == 0,
+    )
+    status, missing_window = request("POST", "/dora/metrics", body={"events": []})
+    check("DORA rejects missing window", status == 422 and "error" in missing_window)
+    status, invalid_window = request(
+        "POST",
+        "/dora/metrics",
+        body={"window": {"from": "2026-09-02T00:00:00Z", "to": "2026-09-01T00:00:00Z"}, "events": []},
+    )
+    check("DORA rejects invalid window", status == 422 and "error" in invalid_window)
+    bad_reference = [dict(metrics_events[0], reverts="unknown-sha")]
+    status, invalid_log = request("POST", "/dora/metrics", body={"window": metrics_window, "events": bad_reference})
+    check("DORA rejects malformed log", status == 422 and "error" in invalid_log)
+
     status, error = request("POST", "/tickets", body={"impact": 1, "urgency": 1, "reporter": {"name": "x"}})
     check("validation envelope", status == 422 and "error" in error)
     status, vip = create(reporter={"name": "VIP", "vip": True}, impact=3, urgency=3, priority="P1")

@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 
 from .clock import due_instants, format_instant, is_business_time, parse_instant
+from .metrics import MetricsInputError, calculate_metrics
 from .storage import connect, fetch, initialize, row_to_ticket
 
 
@@ -94,6 +95,49 @@ def computed_priority(impact: int, urgency: int, vip: bool) -> str:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/dora/metrics")
+async def dora_metrics(request: Request) -> JSONResponse:
+    try:
+        payload = await request.json()
+        result = calculate_metrics(payload)
+    except (ValueError, UnicodeDecodeError) as exc:
+        message = str(exc) or "request body must be valid JSON"
+        return JSONResponse(status_code=422, content={"error": message})
+    return JSONResponse(content=result)
+
+
+@app.get("/dora/ticket-events")
+def ticket_events() -> list[dict]:
+    with connect() as connection:
+        rows = connection.execute(
+            "SELECT id, priority, created_at, acknowledged_at, resolved_at, closed_at FROM tickets"
+        ).fetchall()
+
+    phase_columns = (
+        ("created", "created_at", "new"),
+        ("acknowledged", "acknowledged_at", "acknowledged"),
+        ("resolved", "resolved_at", "resolved"),
+        ("closed", "closed_at", "closed"),
+    )
+    result: list[dict] = []
+    for row in rows:
+        for phase, column, state in phase_columns:
+            value = row[column]
+            if value is None:
+                continue
+            result.append(
+                {
+                    "ticket_id": row["id"],
+                    "at": format_instant(parse_instant(value)),
+                    "phase": phase,
+                    "priority": row["priority"],
+                    "state": state,
+                }
+            )
+    result.sort(key=lambda event: (parse_instant(event["at"]), event["ticket_id"]))
+    return result
 
 
 @app.post("/tickets", status_code=201)
