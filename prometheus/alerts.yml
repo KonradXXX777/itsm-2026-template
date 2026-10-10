@@ -30,4 +30,3 @@ groups:
           ((sum(rate(http_server_request_duration_seconds_count{job="svcdesk",http_route="/kb/search"}[30m])) - sum(rate(http_server_request_duration_seconds_bucket{job="svcdesk",http_route="/kb/search",le="0.2"}[30m]))) / sum(rate(http_server_request_duration_seconds_count{job="svcdesk",http_route="/kb/search"}[30m])) > 6 * (1 - 0.99))
         for: 5m
         labels: {service: svcdesk, slo: latency, severity: P2}
-

@@ -98,4 +98,3 @@ no ticket IDs, query text or raw paths. /metrics is deliberately excluded.
 The cost is 28 finite buckets plus +Inf, sum, count and created per labelset;
 we spend resolution where it changes the p99 decision, not on arbitrary
 millisecond detail across the entire range.
-
