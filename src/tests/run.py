@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import unittest
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -178,6 +179,11 @@ def main() -> None:
     })
     check("malformed clock", status == 400 and "error" in malformed)
 
+    suite = unittest.defaultTestLoader.loadTestsFromName("tests.test_lab3")
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    unit_failures = len(result.failures) + len(result.errors)
+    passed += result.testsRun - unit_failures - len(result.skipped)
+    failed += unit_failures
     print(f"ITSMLAB-TESTS: passed={passed} failed={failed}")
     if failed:
         raise SystemExit(1)

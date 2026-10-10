@@ -6,8 +6,9 @@ from __future__ import annotations
 
 import os
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 
 SCHEMA = """
@@ -35,12 +36,19 @@ def database_path() -> Path:
     return Path(os.getenv("SVCDESK_DB", "/data/svcdesk.db"))
 
 
-def connect() -> sqlite3.Connection:
+@contextmanager
+def connect() -> Iterator[sqlite3.Connection]:
     path = database_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path, timeout=10)
     connection.row_factory = sqlite3.Row
-    return connection
+    try:
+        with connection:
+            yield connection
+    finally:
+        # sqlite3.Connection.__exit__ commits/rolls back but does not close.
+        # Close explicitly so the cardinality load cannot leak file descriptors.
+        connection.close()
 
 
 def initialize() -> None:

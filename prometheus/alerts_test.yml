@@ -1,0 +1,302 @@
+# ai-generated: 100% - Codex constructed first-fire and just-below-threshold histories for each alert.
+{
+  "rule_files": [
+    "alerts.yml"
+  ],
+  "evaluation_interval": "1m",
+  "tests": [
+    {
+      "name": "KbSearchErrorsBurnFast: first firing edge, healthy history then twice the burn",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+600x70 42427.2+427.2x80"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"502\"}",
+          "values": "0x70 172.8+172.8x80"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x151"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "104m",
+          "alertname": "KbSearchErrorsBurnFast",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "105m",
+          "alertname": "KbSearchErrorsBurnFast",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "service": "svcdesk",
+                "slo": "availability",
+                "severity": "P1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KbSearchErrorsBurnFast: sustained 0.8 burn stays quiet (kills lower threshold mutant)",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+530.88x180"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"502\"}",
+          "values": "0+69.12x180"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x181"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "60m",
+          "alertname": "KbSearchErrorsBurnFast",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "120m",
+          "alertname": "KbSearchErrorsBurnFast",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "180m",
+          "alertname": "KbSearchErrorsBurnFast",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "KbSearchErrorsBurnSlow: first firing edge, healthy history then twice the burn",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+600x370 222528+528x380"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"502\"}",
+          "values": "0x370 72+72x380"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x751"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "554m",
+          "alertname": "KbSearchErrorsBurnSlow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "555m",
+          "alertname": "KbSearchErrorsBurnSlow",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "service": "svcdesk",
+                "slo": "availability",
+                "severity": "P2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KbSearchErrorsBurnSlow: sustained 0.8 burn stays quiet (kills lower threshold mutant)",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+571.2x1080"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"502\"}",
+          "values": "0+28.8x1080"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x1081"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "360m",
+          "alertname": "KbSearchErrorsBurnSlow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "720m",
+          "alertname": "KbSearchErrorsBurnSlow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "1080m",
+          "alertname": "KbSearchErrorsBurnSlow",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "KbSearchLatencyBurnFast: first firing edge, healthy history then twice the burn",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+600x151"
+        },
+        {
+          "series": "http_server_request_duration_seconds_bucket{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\",le=\"0.2\"}",
+          "values": "0+600x70 42427.2+427.2x80"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x151"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "104m",
+          "alertname": "KbSearchLatencyBurnFast",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "105m",
+          "alertname": "KbSearchLatencyBurnFast",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "service": "svcdesk",
+                "slo": "latency",
+                "severity": "P1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KbSearchLatencyBurnFast: sustained 0.8 burn stays quiet (kills lower threshold mutant)",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+600x181"
+        },
+        {
+          "series": "http_server_request_duration_seconds_bucket{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\",le=\"0.2\"}",
+          "values": "0+530.88x180"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x181"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "60m",
+          "alertname": "KbSearchLatencyBurnFast",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "120m",
+          "alertname": "KbSearchLatencyBurnFast",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "180m",
+          "alertname": "KbSearchLatencyBurnFast",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "KbSearchLatencyBurnSlow: first firing edge, healthy history then twice the burn",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+600x751"
+        },
+        {
+          "series": "http_server_request_duration_seconds_bucket{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\",le=\"0.2\"}",
+          "values": "0+600x370 222528+528x380"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x751"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "554m",
+          "alertname": "KbSearchLatencyBurnSlow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "555m",
+          "alertname": "KbSearchLatencyBurnSlow",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "service": "svcdesk",
+                "slo": "latency",
+                "severity": "P2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KbSearchLatencyBurnSlow: sustained 0.8 burn stays quiet (kills lower threshold mutant)",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\"}",
+          "values": "0+600x1081"
+        },
+        {
+          "series": "http_server_request_duration_seconds_bucket{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/kb/search\",http_response_status_code=\"200\",le=\"0.2\"}",
+          "values": "0+571.2x1080"
+        },
+        {
+          "series": "http_server_request_duration_seconds_count{job=\"svcdesk\",instance=\"svcdesk:8080\",http_request_method=\"GET\",http_route=\"/tickets/{ticket_id}\",http_response_status_code=\"502\"}",
+          "values": "0+600x1081"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "360m",
+          "alertname": "KbSearchLatencyBurnSlow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "720m",
+          "alertname": "KbSearchLatencyBurnSlow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "1080m",
+          "alertname": "KbSearchLatencyBurnSlow",
+          "exp_alerts": []
+        }
+      ]
+    }
+  ]
+}
+

@@ -10,16 +10,18 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Literal
 
+import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 
 from .clock import due_instants, format_instant, is_business_time, parse_instant
 from .metrics import MetricsInputError, calculate_metrics
 from .storage import connect, fetch, initialize, row_to_ticket
 from .ticket_event_lookup import events_for_ticket
+from .monitoring import RequestMetricsMiddleware, exposition
 
 
 MATRIX = {
@@ -58,16 +60,28 @@ def request_time(x_test_clock: Annotated[str | None, Header(alias="X-Test-Clock"
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(application: FastAPI):
     initialize()
-    yield
+    # No retries, redirects or cache: exactly one upstream request per valid query.
+    async with httpx.AsyncClient(
+        timeout=5.0,
+        follow_redirects=False,
+        limits=httpx.Limits(max_connections=128, max_keepalive_connections=64),
+    ) as client:
+        application.state.kb_client = client
+        yield
 
 
 app = FastAPI(title="svcdesk", lifespan=lifespan)
+app.add_middleware(RequestMetricsMiddleware)
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    if request.url.path == "/kb/search":
+        return JSONResponse(status_code=422, content={"error": {
+            "code": "invalid_query", "message": "q must contain 1 to 200 characters",
+        }})
     return JSONResponse(
         status_code=422,
         content={"error": "validation_error", "details": jsonable_encoder(exc.errors())},
@@ -96,6 +110,28 @@ def computed_priority(impact: int, urgency: int, vip: bool) -> str:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/metrics", include_in_schema=False)
+def prometheus_metrics() -> Response:
+    return Response(content=exposition(), media_type="text/plain; version=0.0.4")
+
+
+@app.get("/kb/search")
+async def kb_search(request: Request, q: Annotated[str, Query(min_length=1, max_length=200)]) -> JSONResponse:
+    upstream = os.getenv("KB_INDEX_URL", "http://kb-index:8080").rstrip("/")
+    try:
+        response = await request.app.state.kb_client.get(upstream + "/search", params={"q": q})
+        response.raise_for_status()
+        if response.status_code != 200:
+            raise ValueError("upstream did not return 200")
+        payload = response.json()
+        hits = payload["hits"]
+    except (httpx.HTTPError, ValueError, KeyError, TypeError):
+        return JSONResponse(status_code=502, content={"error": {
+            "code": "upstream_unavailable", "message": "Knowledge-base index is unavailable",
+        }})
+    return JSONResponse(content={"query": q, "hits": hits})
 
 
 @app.post("/dora/metrics")

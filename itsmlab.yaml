@@ -1,5 +1,6 @@
 # itsmlab.yaml - read by the checker (itsmlab) and by the wrappers itsmlab.sh / itsmlab.ps1.
-lab: 1                                   # the lab this repository is currently submitting
+lab: 3                                   # the lab this repository is currently submitting
+login: KonradXXX777                      # must match the account opening the receipt
 baselines: {}                            # from Lab 2 on: per earlier lab, "student" or "checkpoint"
 repository: "KonradXXX777/itsm-2026-template" # public GitHub repository used for course receipts
 submissions_repo: swasik/itsm-2026-submissions

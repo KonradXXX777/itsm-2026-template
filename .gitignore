@@ -4,6 +4,7 @@ report.json
 __pycache__/
 *.pyc
 .venv/
+.venv-genai/
 # local data: use a named volume in docker-compose.yml, never a bind mount
 data/
 *.db

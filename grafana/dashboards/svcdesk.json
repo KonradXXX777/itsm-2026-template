@@ -1,0 +1,399 @@
+{
+  "id": null,
+  "uid": "svcdesk-lab3",
+  "title": "svcdesk • Knowledge-base SLO",
+  "tags": [
+    "svcdesk",
+    "lab3",
+    "slo"
+  ],
+  "schemaVersion": 41,
+  "version": 1,
+  "editable": false,
+  "timezone": "browser",
+  "refresh": "5s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Request rate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[$__rate_interval]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "Request rate"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Availability (non-5xx)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\",http_response_status_code!~\"5..\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[$__rate_interval]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "Availability (non-5xx)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Server p99 latency",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"svcdesk\",http_route=\"/kb/search\"}[$__rate_interval])))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "Server p99 latency"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Requests within 200 ms",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_bucket{job=\"svcdesk\",http_route=\"/kb/search\",le=\"0.2\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[$__rate_interval]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "Requests within 200 ms"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Availability budget burn",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\",http_response_status_code=~\"5..\"}[5m])) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[5m]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "5m"
+        },
+        {
+          "refId": "B",
+          "expr": "(sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\",http_response_status_code=~\"5..\"}[1h])) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[1h]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "1h"
+        },
+        {
+          "refId": "C",
+          "expr": "(sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\",http_response_status_code=~\"5..\"}[30m])) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[30m]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "30m"
+        },
+        {
+          "refId": "D",
+          "expr": "(sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\",http_response_status_code=~\"5..\"}[6h])) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[6h]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "6h"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Latency budget burn",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "((sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{job=\"svcdesk\",http_route=\"/kb/search\",le=\"0.2\"}[5m]))) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[5m]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "5m"
+        },
+        {
+          "refId": "B",
+          "expr": "((sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[1h])) - sum(rate(http_server_request_duration_seconds_bucket{job=\"svcdesk\",http_route=\"/kb/search\",le=\"0.2\"}[1h]))) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[1h]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "1h"
+        },
+        {
+          "refId": "C",
+          "expr": "((sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[30m])) - sum(rate(http_server_request_duration_seconds_bucket{job=\"svcdesk\",http_route=\"/kb/search\",le=\"0.2\"}[30m]))) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[30m]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "30m"
+        },
+        {
+          "refId": "D",
+          "expr": "((sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[6h])) - sum(rate(http_server_request_duration_seconds_bucket{job=\"svcdesk\",http_route=\"/kb/search\",le=\"0.2\"}[6h]))) / sum(rate(http_server_request_duration_seconds_count{job=\"svcdesk\",http_route=\"/kb/search\"}[6h]))) / 0.01",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "range": true,
+          "legendFormat": "6h"
+        }
+      ]
+    }
+  ]
+}
