@@ -1,6 +1,6 @@
 {
-  "toxic": {"type": "latency", "latency": 100, "jitter": 10},
-  "client_p99_seconds": 0.2288,
+  "toxic": {"type": "latency", "latency": 500, "jitter": 0},
+  "client_p99_seconds": 0.6321,
   "server_p99_seconds": 0.1243,
-  "gap_seconds": 0.1045
+  "gap_seconds": 0.5078
 }

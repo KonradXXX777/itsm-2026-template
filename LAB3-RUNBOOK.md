@@ -101,7 +101,7 @@ python3 gap/setup.py
 ```
 
 Na tym Macu wrapper działa w kontenerze, dlatego `host.docker.internal`, a nie
-`localhost`. Toxiproxy dodaje na drodze odpowiedzi 100 ms ± 10 ms. Klient widzi
+`localhost`. Toxiproxy dodaje na drodze odpowiedzi stałe 500 ms bez jittera. Klient widzi
 to opóźnienie; timer wewnątrz aplikacji go nie widzi. Wyniki i interpretacja
 są w `gap.json` i `gap/README.md`. Wyłączanie toksycznego proxy nie zmienia
 zwykłego endpointu na 8080. Port 8666 służy tylko eksperymentowi.
