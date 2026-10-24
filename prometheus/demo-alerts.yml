@@ -1,0 +1,39 @@
+# ai-generated: 100% - Codex designed shop symptom alerts using five-minute SERVER span metrics in milliseconds.
+groups:
+  - name: shop-symptoms
+    interval: 10s
+    rules:
+      - alert: ShopCheckoutErrorRate
+        expr: |
+          sum(rate(traces_span_metrics_calls_total{service_name="checkout",span_kind="SPAN_KIND_SERVER",status_code="STATUS_CODE_ERROR"}[5m]))
+          / sum(rate(traces_span_metrics_calls_total{service_name="checkout",span_kind="SPAN_KIND_SERVER"}[5m])) > 0.05
+        for: 2m
+        labels: {service: checkout, severity: P1, system: shop}
+        annotations:
+          summary: "More than 5% of checkout requests fail"
+          description: "Orders are failing. Open a P1 ticket, inspect dependency error rates and recent changes; use the Lab 4 incident runbook."
+      - alert: ShopCheckoutSlow
+        expr: |
+          histogram_quantile(0.99, sum by(le) (rate(traces_span_metrics_duration_milliseconds_bucket{service_name="checkout",span_kind="SPAN_KIND_SERVER"}[5m]))) > 2000
+        for: 2m
+        labels: {service: checkout, severity: P1, system: shop}
+        annotations:
+          summary: "Checkout p99 exceeds 2000 milliseconds"
+          description: "Orders are slow, even without errors. Compare checkout with shipping and catalog SERVER latency before attributing a cause."
+      - alert: ShopServiceErrors
+        expr: |
+          sum by(service_name) (rate(traces_span_metrics_calls_total{span_kind="SPAN_KIND_SERVER",status_code="STATUS_CODE_ERROR"}[5m]))
+          / sum by(service_name) (rate(traces_span_metrics_calls_total{span_kind="SPAN_KIND_SERVER"}[5m])) > 0.02
+        for: 3m
+        labels: {service: shop, severity: P2, system: shop}
+        annotations:
+          summary: "A shop dependency has more than 2% server errors"
+          description: "Investigate the service_name label in chat; a shop P1 inhibits this notification, not its metrics or detection history."
+      - alert: ShopServiceSlow
+        expr: |
+          histogram_quantile(0.99, sum by(service_name,le) (rate(traces_span_metrics_duration_milliseconds_bucket{span_kind="SPAN_KIND_SERVER"}[5m]))) > 2000
+        for: 5m
+        labels: {service: shop, severity: P3, system: shop}
+        annotations:
+          summary: "A shop dependency has sustained high tail latency"
+          description: "Review dependency latency in chat after five minutes; do not independently page on every downstream symptom."

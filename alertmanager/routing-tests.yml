@@ -1,0 +1,30 @@
+# ai-generated: 100% - Codex wrote real-alert routes and positive, cross-system and missing-label inhibition cases.
+routes:
+  - labels: {alertname: ShopCheckoutSlow, service: checkout, severity: P1, system: shop}
+    receivers: [pager]
+  - labels: {alertname: ShopCheckoutErrorRate, service: checkout, severity: P1, system: shop}
+    receivers: [pager]
+  - labels: {alertname: ShopServiceErrors, service: shop, severity: P2, system: shop}
+    receivers: [chat]
+  - labels: {alertname: ShopServiceSlow, service: shop, severity: P3, system: shop}
+    receivers: [chat]
+  - labels: {alertname: KbSearchErrorsBurnFast, service: svcdesk, slo: availability, severity: P1}
+    receivers: [pager]
+  - labels: {alertname: KbSearchErrorsBurnSlow, service: svcdesk, slo: availability, severity: P2}
+    receivers: [chat]
+inhibitions:
+  - source: {alertname: ShopCheckoutSlow, service: checkout, severity: P1, system: shop}
+    target: {alertname: ShopServiceErrors, service: shop, service_name: ad, severity: P2, system: shop}
+    inhibited: true
+  - source: {alertname: ShopCheckoutSlow, service: checkout, severity: P1, system: shop}
+    target: {alertname: ShopServiceErrors, service: shop, service_name: ad, severity: P2, system: other}
+    inhibited: false
+  - source: {alertname: ShopCheckoutSlow, service: checkout, severity: P1, system: shop}
+    target: {alertname: ShopServiceSlow, service: shop, service_name: shipping, severity: P3, system: shop}
+    inhibited: true
+  - source: {alertname: ShopCheckoutSlow, service: checkout, severity: P1, system: shop}
+    target: {alertname: KbSearchErrorsBurnSlow, service: svcdesk, slo: availability, severity: P2}
+    inhibited: false
+  - source: {alertname: ShopCheckoutSlow, service: checkout, severity: P1}
+    target: {alertname: KbSearchErrorsBurnSlow, service: svcdesk, severity: P2}
+    inhibited: false

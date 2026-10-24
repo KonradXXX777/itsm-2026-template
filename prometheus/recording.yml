@@ -1,0 +1,5 @@
+# ai-generated: 100% - Codex isolated historical replay from live scraping and alert evaluation.
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+scrape_configs: []
