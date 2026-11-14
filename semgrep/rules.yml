@@ -1,0 +1,18 @@
+# ai-generated: 100% - Codex wrote two focused review rules for svcdesk's transport and persistence boundaries.
+rules:
+  - id: plaintext-kb-default
+    languages: [python]
+    severity: INFO
+    message: Review the plaintext KB upstream default; keep it on a trusted Compose network or configure a TLS endpoint.
+    patterns:
+      - pattern: os.getenv("KB_INDEX_URL", $DEFAULT)
+      - metavariable-regex:
+          metavariable: $DEFAULT
+          regex: '["\x27]http://'
+  - id: persistent-sqlite-open
+    languages: [python]
+    severity: INFO
+    message: Review ownership and permissions of the persistent SQLite file and its parent volume; the path is deployment configuration.
+    patterns:
+      - pattern: sqlite3.connect($PATH, ...)
+      - pattern-not: sqlite3.connect(":memory:", ...)
