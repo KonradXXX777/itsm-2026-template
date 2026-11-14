@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ai-reviewer",
+          "informationUri": "https://github.com/swasik/itsm-2026-template",
+          "rules": [
+            {
+              "id": "url-building",
+              "name": "url-building",
+              "shortDescription": {
+                "text": "url-building"
+              },
+              "properties": {
+                "tags": []
+              }
+            },
+            {
+              "id": "pinned-package",
+              "name": "pinned-package",
+              "shortDescription": {
+                "text": "pinned-package"
+              },
+              "properties": {
+                "tags": []
+              }
+            },
+            {
+              "id": "path-building",
+              "name": "path-building",
+              "shortDescription": {
+                "text": "path-building"
+              },
+              "properties": {
+                "tags": []
+              }
+            },
+            {
+              "id": "sql-string-format",
+              "name": "sql-string-format",
+              "shortDescription": {
+                "text": "sql-string-format"
+              },
+              "properties": {
+                "tags": []
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "url-building",
+          "level": "warning",
+          "message": {
+            "text": "The URL built for tar.gz archive is constructed from input, allowing an attacker to control the target URL."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "lab5-canary/app/attachment_export.py"
+                },
+                "region": {
+                  "startLine": 10,
+                  "endLine": 11
+                }
+              }
+            }
+          ],
+          "properties": {
+            "class": "ssrf"
+          }
+        },
+        {
+          "ruleId": "pinned-package",
+          "level": "warning",
+          "message": {
+            "text": "The package 'yaml' is pinned to version 5.0.1, which is known to have a vulnerability."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "lab5-canary/app/rules_loader.py"
+                },
+                "region": {
+                  "startLine": 7,
+                  "endLine": 9
+                }
+              }
+            }
+          ],
+          "properties": {
+            "class": "vulnerable-dependency"
+          }
+        },
+        {
+          "ruleId": "path-building",
+          "level": "warning",
+          "message": {
+            "text": "The ticket ID is used to build the path for the ticket, which could lead to path traversal if the ID contains special characters."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "lab5-canary/app/ticket_access.py"
+                },
+                "region": {
+                  "startLine": 13,
+                  "endLine": 15
+                }
+              }
+            }
+          ],
+          "properties": {
+            "class": "path-traversal"
+          }
+        },
+        {
+          "ruleId": "sql-string-format",
+          "level": "warning",
+          "message": {
+            "text": "The event data is directly used in the SQL query, allowing for SQL injection if the data is not properly sanitized."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "lab5-canary/app/webhook_relay.py"
+                },
+                "region": {
+                  "startLine": 6,
+                  "endLine": 8
+                }
+              }
+            }
+          ],
+          "properties": {
+            "class": "injection"
+          }
+        }
+      ],
+      "properties": {
+        "model": "qwen3:1.7b",
+        "route": "local"
+      }
+    }
+  ]
+}
